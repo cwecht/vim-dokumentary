@@ -73,6 +73,8 @@ let s:default_dokumentary_docprgs["tex"]      = "texdoc -I -M -q {0}"
 let s:default_dokumentary_docprgs["dict"]     = "dict {0}"
 let s:default_dokumentary_docprgs["sdvc"]     = "sdvc {0}"
 
+let s:non_cli_doc_prgs = ['texdoc']
+
 if !exists('g:dokumentary_docprgs')
 	let g:dokumentary_docprgs = {}
 endif
@@ -89,18 +91,21 @@ function! s:output_to_window(given_keyword, visual, newwindow, type) " {{{1
 	endif
 
 	let l:prg = g:dokumentary_docprgs[a:type]
+	let l:prg_name = split(l:prg)[0]
 
 	if !empty(l:keyword) && executable(split(l:prg)[0])
-		if a:newwindow
-			if exists('g:dokumentary_open') && !empty(g:dokumentary_open)
-				execute g:dokumentary_open
+		if index(s:non_cli_doc_prgs, l:prg_name) == -1
+			if a:newwindow
+				if exists('g:dokumentary_open') && !empty(g:dokumentary_open)
+					execute g:dokumentary_open
+				else
+					rightbelow 84vnew
+				endif
+				setlocal buftype=nofile
+				set bufhidden=delete
 			else
-				rightbelow 84vnew
+				0,$d
 			endif
-			setlocal buftype=nofile
-			set bufhidden=delete
-		else
-			0,$d
 		endif
 
 		let b:dokumentary_filetype = a:type
